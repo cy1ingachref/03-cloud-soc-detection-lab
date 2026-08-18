@@ -1,0 +1,24 @@
+# Sigma rule: Impossible Travel
+# MITRE ATT&CK: T1078 (Valid Accounts)
+# Detects the same account authenticating from two distant IPs within a short
+# time window (here approximated by two different /8 networks < 10m apart).
+title: Impossible Travel for a Single Account
+id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+status: experimental
+description: Detects the same user authenticating from geographically distant IPs in a short time.
+author: your-name
+date: 2026-08-18
+logsource:
+  category: authentication
+  product: generic
+detection:
+  selection:
+    event.outcome: success
+  condition: selection | count(source.ip) by event.user > 1 in 10m
+fields:
+  - event.user
+  - source.ip
+falsepositives:
+  - VPN / NAT egress changes
+  - Roaming mobile carrier
+level: medium

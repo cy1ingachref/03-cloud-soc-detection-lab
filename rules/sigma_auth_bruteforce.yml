@@ -1,0 +1,23 @@
+# Sigma rule: Authentication Brute Force / Password Spray
+# MITRE ATT&CK: T1110 (Brute Force)
+# Detects >= 5 failed logins for a single account within a 1-minute window.
+title: Account Brute Force Detected
+id: 9f1a2b3c-4d5e-6f70-8a9b-0c1d2e3f4a5b
+status: experimental
+description: Detects a high rate of failed authentication attempts for one account.
+author: your-name
+date: 2026-08-18
+logsource:
+  category: authentication
+  product: generic
+detection:
+  selection:
+    event.outcome: failure
+  condition: selection | count(event.user) by event.target > 5 in 1m
+fields:
+  - event.user
+  - event.target
+  - source.ip
+falsepositives:
+  - Legitimate user repeatedly mistyping a password (rare at this threshold)
+level: high

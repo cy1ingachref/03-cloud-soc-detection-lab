@@ -1,0 +1,57 @@
+# docker-compose.yml
+# ----------------------------------------------------------------------------
+# A minimal local SOC: Elasticsearch + Kibana for storage/visualization, a
+# log generator that replays simulated auth events, and a detection runner that
+# applies Sigma rules and ships alerts back to Elasticsearch.
+#
+# You do NOT need this to verify the detection logic — run_detections.py works
+# standalone. This is here to show you can stand up a real ELK pipeline.
+# ----------------------------------------------------------------------------
+
+version: "3.8"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+
+  generator:
+    build:
+      context: ./simulate
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    command: ["python", "atomic_bruteforce.py", "--out", "/app/logs/auth.log", "--loop"]
+
+  detector:
+    build:
+      context: ./detections
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./rules:/app/rules
+    command: ["python", "run_detections.py", "/app/logs/auth.log", "--es", "http://elasticsearch:9200"]
