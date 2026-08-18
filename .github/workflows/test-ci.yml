@@ -1,0 +1,23 @@
+# Cloud SOC detection lab — detection engine tests + live sigma smoke test.
+name: Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Unit tests (sigma matcher)
+        run: python -m unittest tests.test_detections -v
+      - name: Live detection smoke test
+        run: |
+          python simulate/atomic_bruteforce.py --out /tmp/auth.log
+          python detections/run_detections.py /tmp/auth.log | tee /tmp/out.txt
+          grep -q "ALERT" /tmp/out.txt && echo "OK: at least one alert fired"
