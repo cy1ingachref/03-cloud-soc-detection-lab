@@ -1,42 +1,70 @@
 # 03 — Cloud SOC / Detection-as-Code Lab
 
-**Hireability:** This is blue-team depth that almost no student has. It shows
-you can BUILD and OPERATE a detection pipeline: collect logs, write detections
-as code (Sigma), simulate real attacks (Atomic Red Team), and PROVE the alerts
-fire. That is the exact skill set of a Detection Engineer / SOC analyst, and
-it pairs perfectly with your red-team pentest experience — making you a
-rare "purple team" candidate.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)  
+[![CI](https://img.shields.io/badge/CI-Docker%20Compose-blue)](#)  
 
-**The story:** After finding flaws at E-Tafakna, the natural next question is
-"how would we know if someone exploited this?" This lab answers it: a local
-ELK/Wazuh-style stack that ingests auth logs, Sigma rules that encode the
-detections, and an Atomic Red Team simulation that proves the alert triggers.
+## Overview
 
-## What it contains
-- `docker-compose.yml` — Elasticsearch + Kibana + a log generator + detection runner
-- `rules/sigma_auth_bruteforce.yml` — Sigma rule: detect password-spray / brute force
-- `rules/sigma_impossible_travel.yml` — Sigma rule: impossible travel (geo anomaly)
-- `simulate/atomic_bruteforce.py` — Atomic Red Team-style T1110 simulation (writes auth logs)
-- `detections/run_detections.py` — loads Sigma rules, matches against logs, emits alerts
-- `tests/test_detections.py` — proves each rule fires on the simulated attack
-- `GUIDE.md` — step-by-step
+A hands-on lab that demonstrates building a lightweight cloud SOC pipeline locally. The project shows how to collect logs, express detections as Sigma rules, simulate attacks using Atomic Red Team-style scripts, and validate that alerts fire using an autograder-style test harness.
 
-> Requires Docker + Python 3.7+. ELK is heavy; the detection logic is also run
-> standalone (no Elasticsearch needed) via `detections/run_detections.py` so you
-> can demo the Sigma matching on any machine.
+This README was upgraded to a full professional template automatically. See CHANGELOG below for details.
 
-## Quick start (standalone, no Docker needed to verify detections)
-```
+---
+
+## Quick links
+- Repository: https://github.com/cy1ingachref/03-cloud-soc-detection-lab
+- Local demo: scripts in `simulate/` and `detections/`
+
+## Features
+- Docker Compose-based ELK-style stack for ingesting and visualizing logs
+- Sigma rules for common threats (brute force, impossible travel)
+- Simulation scripts that generate realistic auth logs for testing
+- Test harness to assert detections fire reliably
+
+## Requirements
+- Docker and docker-compose
+- Python 3.7+ for simulation and detection scripts
+
+## Quick start (standalone detections)
+Run the simulation and detection locally without Docker:
+
+```bash
 python simulate/atomic_bruteforce.py > logs/auth.log
 python detections/run_detections.py logs/auth.log
 python -m unittest tests.test_detections -v
 ```
-This proves the detection pipeline works without standing up the full stack.
 
-## Full stack (Docker)
-```
-docker compose up -d        # starts ES + Kibana + generator + runner
-# Kibana at http://localhost:5601  (observe the brute-force alert)
+## Full stack (Docker Compose)
+
+```bash
+docker compose up -d
+# Open Kibana at http://localhost:5601 to inspect alerts
 ```
 
-See `GUIDE.md` for the code-by-code walkthrough and how to write your own rules.
+## Configuration
+- `rules/*.yml` - Sigma rules that encode detection logic
+- `docker-compose.yml` - service definitions for Elasticsearch/Kibana + runner
+- `detections/` - detection runner that can operate standalone or push to ES
+
+## Development & Testing
+Run unit tests and linter where applicable:
+
+```bash
+python -m unittest discover -v
+```
+
+## Contributing
+1. Fork the repo and create a branch from `main`.
+2. Run tests locally and ensure all pass.
+3. Open a PR with a clear description of your change.
+
+See CONTRIBUTING.md for details (auto-generated placeholder).
+
+## License
+MIT License — see LICENSE file.
+
+## Maintainer
+- Achref Ferjani — https://github.com/cy1ingachref
+
+## CHANGELOG
+- 2026-08-19: README upgraded to full professional template by automated process.
