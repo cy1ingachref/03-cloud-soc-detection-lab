@@ -1,42 +1,36 @@
 # 03 — Cloud SOC / Detection-as-Code Lab
 
-**Hireability:** This is blue-team depth that almost no student has. It shows
-you can BUILD and OPERATE a detection pipeline: collect logs, write detections
-as code (Sigma), simulate real attacks (Atomic Red Team), and PROVE the alerts
-fire. That is the exact skill set of a Detection Engineer / SOC analyst, and
-it pairs perfectly with your red-team pentest experience — making you a
-rare "purple team" candidate.
+A hands-on Detection-as-Code lab demonstrating log collection, Sigma rule development, simulation of adversary behavior, and end-to-end validation using unit tests and an optional ELK-like stack. Designed to show that you can both write detections and operate a detection pipeline.
 
-**The story:** After finding flaws at E-Tafakna, the natural next question is
-"how would we know if someone exploited this?" This lab answers it: a local
-ELK/Wazuh-style stack that ingests auth logs, Sigma rules that encode the
-detections, and an Atomic Red Team simulation that proves the alert triggers.
+Why this project matters
 
-## What it contains
-- `docker-compose.yml` — Elasticsearch + Kibana + a log generator + detection runner
-- `rules/sigma_auth_bruteforce.yml` — Sigma rule: detect password-spray / brute force
-- `rules/sigma_impossible_travel.yml` — Sigma rule: impossible travel (geo anomaly)
-- `simulate/atomic_bruteforce.py` — Atomic Red Team-style T1110 simulation (writes auth logs)
-- `detections/run_detections.py` — loads Sigma rules, matches against logs, emits alerts
-- `tests/test_detections.py` — proves each rule fires on the simulated attack
-- `GUIDE.md` — step-by-step
+- Demonstrates practical detection engineering and operational skills (valuable for SOC/Detection Engineer roles).
+- Shows how to validate detections with reproducible simulations and unit tests.
+- Provides both a lightweight standalone mode and a full Docker stack for realistic demos.
 
-> Requires Docker + Python 3.7+. ELK is heavy; the detection logic is also run
-> standalone (no Elasticsearch needed) via `detections/run_detections.py` so you
-> can demo the Sigma matching on any machine.
+What’s included
 
-## Quick start (standalone, no Docker needed to verify detections)
-```
+- `docker-compose.yml` — optional ELK/Kibana-style stack for full-stack demos
+- `rules/` — Sigma rules (e.g., auth brute-force, impossible travel)
+- `simulate/atomic_bruteforce.py` — attacker simulation that generates auth logs
+- `detections/run_detections.py` — Sigma loader and matcher for log files
+- `tests/test_detections.py` — unit tests that prove rules fire on simulated attacks
+- `GUIDE.md` — walkthrough for each component and how to author Sigma rules
+
+Quick start (standalone)
+
+# generate logs and run detections
 python simulate/atomic_bruteforce.py > logs/auth.log
 python detections/run_detections.py logs/auth.log
 python -m unittest tests.test_detections -v
-```
-This proves the detection pipeline works without standing up the full stack.
 
-## Full stack (Docker)
-```
-docker compose up -d        # starts ES + Kibana + generator + runner
-# Kibana at http://localhost:5601  (observe the brute-force alert)
-```
+Full stack (Docker)
 
-See `GUIDE.md` for the code-by-code walkthrough and how to write your own rules.
+# start Elasticsearch + Kibana + generator + runner
+docker compose up -d
+# open Kibana at http://localhost:5601 to observe alerts
+
+Notes
+
+- The detection logic can run standalone without Elasticsearch to make demos and CI validation lightweight.
+- See GUIDE.md for instructions on extending rules and integrating with SIEMs.
